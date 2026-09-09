@@ -37,7 +37,7 @@ schedule_interval = '58 07 * * *'
     
 # статистический подход - методы межквартильного размаха и правило 3 сигм
 # методом межквартильного размаха
-def check_anomaly_iqr(df, metric, a=4, n=5):
+def check_anomaly_iqr(df, metric, a=4, n=5, upper_threshold=0.3):
     df['q25'] = df[metric].shift(96).rolling(n).quantile(0.25)
     df['q75'] = df[metric].shift(96).rolling(n).quantile(0.75)
     df['iqr'] = df['q75'] - df['q25']
@@ -51,7 +51,8 @@ def check_anomaly_iqr(df, metric, a=4, n=5):
     df['low'] = df['low'].rolling(n, center=True, min_periods=1).mean()
 
     # будет также отображаться информация о том, за какую границу выходят значения
-    if df[metric].iloc[-1] < df['low'].iloc[-1] or df[metric].iloc[-1] > df['up'].iloc[-1]:
+    if df[metric].iloc[-1] < df['low'].iloc[-1] or (df[metric].iloc[-1] > df['up'].iloc[-1] 
+                                                and (df[metric].iloc[-1]/df['up'].iloc[-1] - 1) == upper_threshold):
         is_alert = True
     else:
         is_alert = False
@@ -61,13 +62,14 @@ def check_anomaly_iqr(df, metric, a=4, n=5):
     # правило сигм
 
     
-def check_sigma(df_2, metric, a=3, n=5):
+def check_sigma(df_2, metric, a=3, n=5, upper_threshold=0.3)):
     df_2['rolling_mean'] = df_2[metric].shift(96).rolling(n, center=True, min_periods=1).mean()
     df_2['sigma'] = df_2[metric].shift(96).rolling(n).std()
     df_2['up_level'] = df_2['rolling_mean'] + a*df_2['sigma']
     df_2['low_level'] = df_2['rolling_mean'] - a*df_2['sigma']
 
-    if df_2[metric].iloc[-1] < df_2['low_level'].iloc[-1] or df_2[metric].iloc[-1] > df_2['up_level'].iloc[-1]:
+    if df_2[metric].iloc[-1] < df_2['low_level'].iloc[-1] or (df_2[metric].iloc[-1] > df_2['up_level'].iloc[-1]
+                                                              and (df_2[metric].iloc[-1]/df_2['up'].iloc[-1] - 1) == upper_threshold):
         is_alert_2 = True
     else:
         is_alert_2 = False
