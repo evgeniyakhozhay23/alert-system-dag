@@ -12,12 +12,12 @@ from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
 
 
-my_token = "8602950487:AAHsR7Veo0xfcXkNVe1XO_YzjkW5gzGx5rk"
+my_token = "my_token" #здесь секретный токен бота в кавычках, который отправляет отчет
 bot = telegram.Bot(token=my_token)
 
-chat_id = -1002614297220 
+chat_id = ###### id чата, в который будет отправляться отчет
 
-def ch_get_df(query='Select 1', host='http://clickhouse.lab.karpov.courses:8123', user='student', password='dpo_python_2020'):
+def ch_get_df(query='Select 1', host='http://clickhouse.lab.karpov.courses:8123', user='student', password='#######'):
     r = requests.post(host, data=query.encode("utf-8"), auth=(user, password), verify=False)
     result = pd.read_csv(StringIO(r.text), sep='\t')
     return result
